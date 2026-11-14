@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vimedwaste"
+version = "0.1.0"
+description = "Khung dữ liệu ViMedWaste: cảnh báo bỏ sai chất thải y tế theo TT 20/2021"
+requires-python = ">=3.11"
+dependencies = [
+  "numpy>=1.26",
+  "pandas>=2.2",
+  "pillow>=10.0",
+  "imagehash>=4.3",
+  "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.setuptools.packages.find]
+include = ["vimedwaste*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

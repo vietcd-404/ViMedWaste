@@ -1,0 +1,11 @@
+# Dữ liệu và bảng ánh xạ KHÔNG đưa lên Git
+data/
+!data/README.md
+results/
+*.zip
+
+# Python
+__pycache__/
+*.egg-info/
+.venv/
+.pytest_cache/

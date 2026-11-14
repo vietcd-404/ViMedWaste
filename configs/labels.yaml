@@ -1,0 +1,45 @@
+# Tập nhãn, loại thùng và ma trận tương thích A[k, b] (06_DAC_TA_TRIEN_KHAI.md, mục 2).
+# Người phụ trách: Việt. Mọi script đọc nhãn từ file này, không gõ cứng trong code.
+
+bins:
+  B1: Hộp kháng thủng màu vàng (sắc nhọn)
+  B2: Túi, thùng màu vàng (lây nhiễm không sắc nhọn)
+  B3: Túi, thùng màu đen (nguy hại không lây nhiễm)
+  B4: Túi, thùng màu xanh (rắn thông thường)
+  B5: Túi, thùng màu trắng (tái chế)
+
+labels:
+  L01: {name: Kim tiêm, bơm tiêm liền kim, group: lay_nhiem_sac_nhon, c_fn: 10}
+  L02: {name: Vật sắc nhọn khác, group: lay_nhiem_sac_nhon, c_fn: 10}
+  L03: {name: Bông, băng, gạc, group: lay_nhiem_khong_sac_nhon, c_fn: 5}
+  L04: {name: Găng tay y tế, group: lay_nhiem_khong_sac_nhon, c_fn: 5}
+  L05: {name: Dây truyền, ống dẫn, túi dịch, group: lay_nhiem_khong_sac_nhon, c_fn: 5}
+  L06: {name: Bao bì có cảnh báo nguy hại, group: nguy_hai, c_fn: 5}
+  L07: {name: Thiết bị chứa thủy ngân, group: nguy_hai, c_fn: 5}
+  L08: {name: Chai, lọ sạch, group: tai_che, c_fn: 1}
+  L09: {name: Giấy, bìa carton, group: tai_che, c_fn: 1}
+  L10: {name: Chất thải sinh hoạt, group: thong_thuong, c_fn: 1}
+
+# 1 = được phép bỏ vào thùng đó. L03–L05 được phép bỏ thêm vào B1.
+compatibility:
+  L01: [B1]
+  L02: [B1]
+  L03: [B1, B2]
+  L04: [B1, B2]
+  L05: [B1, B2]
+  L06: [B3]
+  L07: [B3]
+  L08: [B5]
+  L09: [B5]
+  L10: [B4]
+
+annotation:
+  kappa_min: 0.80
+  quality_tag: bad_quality
+
+split:
+  ratios: {train: 0.70, val: 0.15, test: 0.15}
+  seed: 0
+
+dedup:
+  phash_max_distance: 6
