@@ -11,6 +11,7 @@ backend/
 """
 from __future__ import annotations
 
+import threading
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -25,14 +26,19 @@ from .services.model_service import ModelUnavailable
 from .settings import CORS_ORIGINS, PASSWORD, SEED_EVENTS, STATIC_DIR
 
 
+def _seed_if_empty() -> None:
+    """Hosting miễn phí xóa dữ liệu mỗi lần khởi động lại → sinh lại sự kiện mô phỏng."""
+    with connect() as c:
+        if c.execute("SELECT COUNT(*) FROM events").fetchone()[0] == 0:
+            simulation.simulate(SEED_EVENTS, seed=0)
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     init_db()
     if SEED_EVENTS:
-        with connect() as c:
-            empty = c.execute("SELECT COUNT(*) FROM events").fetchone()[0] == 0
-        if empty:                      # hosting miễn phí xóa dữ liệu mỗi lần khởi động lại
-            simulation.simulate(SEED_EVENTS, seed=0)
+        # Chạy nền: CPU gói miễn phí yếu, phải mở cổng ngay kẻo nền tảng tưởng app treo
+        threading.Thread(target=_seed_if_empty, daemon=True).start()
     yield
 
 

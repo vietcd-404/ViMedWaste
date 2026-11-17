@@ -59,18 +59,23 @@ Yêu cầu: Python 3.11 (môi trường ảo `..\.venv`), Node 20+.
 
 PowerShell chặn script thì chạy một lần: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 
-## Deploy lên Hugging Face Spaces
+## Deploy
 
-Một container Docker (`Dockerfile`): build Angular, FastAPI phục vụ cả API lẫn giao diện ở cổng 7860, khóa bằng mật khẩu,
-tự sinh 24 sự kiện mô phỏng từ bộ ảnh demo nhỏ (`data/demo/`, 168 ảnh) mỗi lần khởi động.
+Một container Docker (`Dockerfile`): build Angular, FastAPI phục vụ cả API lẫn giao diện, khóa bằng mật khẩu,
+tự sinh sự kiện mô phỏng từ bộ ảnh demo nhỏ (`data/demo/`, 168 ảnh CC BY) mỗi lần khởi động.
 
 ```powershell
-.\scripts\dev.ps1 docker                          # thử trên máy: http://localhost:7860 (mật khẩu: demo)
-..\.venv\Scripts\hf.exe auth login                # một lần, dán token quyền Write
-.\scripts\dev.ps1 deploy <tài-khoản>/vimedwaste   # gom file → tạo Space → đặt mật khẩu → tải lên
+.\scripts\dev.ps1 docker      # thử trên máy: http://localhost:7860 (mật khẩu: demo)
 ```
 
-Gói miễn phí không giữ dữ liệu khi Space khởi động lại. Không đưa ảnh thật của bệnh viện lên đây.
+**Render (đang dùng, gói free):** cấu hình ở `render.yaml`. Dashboard Render → New → Blueprint → chọn repo GitHub → nhập
+`VIMEDWASTE_PASSWORD` → Apply. Mỗi lần push `main`, Render tự build lại.
+Đã đo với giới hạn gói free (0,1 CPU, 512 MB): mở cổng ~15 s, RAM ~190 MB, một lần dự đoán ~0,7 s, tắt Grad-CAM.
+Gói free ngủ khi lâu không ai vào (lần mở lại chờ khoảng một phút) và không giữ dữ liệu khi khởi động lại.
+
+**Hugging Face Spaces:** Docker Space giờ cần tài khoản PRO; script `scripts/deploy_hf_space.py` vẫn dùng được nếu có PRO.
+
+Không đưa ảnh thật của bệnh viện lên hosting công khai.
 
 ## Quy trình phát triển
 

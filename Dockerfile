@@ -1,4 +1,4 @@
-# Một container: build Angular → FastAPI phục vụ cả API lẫn giao diện ở cổng 7860 (chuẩn Hugging Face Spaces).
+# Một container: build Angular → FastAPI phục vụ cả API lẫn giao diện (Render, Hugging Face, server trường).
 #   docker build -t vimedwaste .
 #   docker run -p 7860:7860 -e VIMEDWASTE_PASSWORD=doimatkhau vimedwaste
 # Bỏ Grad-CAM (nhẹ hơn ~1 GB): docker build --build-arg GRADCAM=0 -t vimedwaste .
@@ -47,5 +47,6 @@ USER user
 # Tải sẵn trọng số EfficientNet-B0 cho Grad-CAM để lúc chạy không phải tải
 RUN if [ "$GRADCAM" = "1" ]; then python -c "from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights as W; efficientnet_b0(weights=W.IMAGENET1K_V1)"; fi
 
+# Cổng: Render cấp qua biến PORT, Hugging Face dùng 7860
 EXPOSE 7860
-CMD ["python", "-m", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["sh", "-c", "exec python -m uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-7860}"]

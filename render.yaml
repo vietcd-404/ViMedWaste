@@ -1,0 +1,29 @@
+# Render Blueprint: Dashboard → New → Blueprint → chọn repo này → Apply.
+# Mỗi lần push lên nhánh main, Render tự build lại từ Dockerfile.
+services:
+  - type: web
+    name: vimedwaste
+    runtime: docker
+    plan: free
+    branch: main
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      # Gói free 512 MB RAM: chỉ chạy ONNX, không nạp PyTorch/Grad-CAM.
+      # GRADCAM = build arg (image nhẹ hơn nếu Render truyền vào lúc build);
+      # VIMEDWASTE_GRADCAM = công tắc lúc chạy (luôn có hiệu lực).
+      - key: GRADCAM
+        value: "0"
+      - key: VIMEDWASTE_GRADCAM
+        value: "0"
+      # Gói free chỉ 0,1 CPU nhưng container thấy nhiều nhân: ép một luồng, tránh tranh chấp
+      - key: VIMEDWASTE_ORT_THREADS
+        value: "1"
+      - key: OMP_NUM_THREADS
+        value: "1"
+      - key: VIMEDWASTE_SEED_EVENTS
+        value: "12"
+      # Mật khẩu truy cập: Render hỏi khi tạo, không lưu trong repo
+      - key: VIMEDWASTE_PASSWORD
+        sync: false

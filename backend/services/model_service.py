@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import io
+import os
 import json
 
 import numpy as np
@@ -79,6 +80,8 @@ def _gradcam_model():
     if s.get("gradcam") is not None:
         return s["gradcam"]
     head_path = MODELS_DIR / "head.pt"
+    if os.environ.get("VIMEDWASTE_GRADCAM", "1") == "0":   # tắt để không nạp PyTorch (máy ít RAM)
+        return None
     try:
         import torch
         from torchvision.models import EfficientNet_B0_Weights, efficientnet_b0

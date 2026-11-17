@@ -5,6 +5,7 @@ Quy ước file mô hình: artifacts/models/vimedwaste.onnx, đầu vào ảnh 1
 """
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import numpy as np
@@ -35,7 +36,14 @@ class OnnxPredictor:
     def __init__(self, path: Path = MODEL_PATH):
         import onnxruntime as ort
 
-        self.session = ort.InferenceSession(str(path), providers=["CPUExecutionProvider"])
+        opts = ort.SessionOptions()
+        # Máy được cấp ít CPU (hosting miễn phí, Pi) mà thấy nhiều nhân → mặc định mở quá nhiều luồng.
+        # VIMEDWASTE_ORT_THREADS=1 để chạy một luồng; 0 hoặc bỏ trống = để onnxruntime tự chọn.
+        threads = int(os.environ.get("VIMEDWASTE_ORT_THREADS", "0"))
+        if threads > 0:
+            opts.intra_op_num_threads = threads
+            opts.inter_op_num_threads = 1
+        self.session = ort.InferenceSession(str(path), sess_options=opts, providers=["CPUExecutionProvider"])
         self.input_name = self.session.get_inputs()[0].name
         self.labels = load_config().labels
 
