@@ -1,8 +1,18 @@
-# Dữ liệu và bảng ánh xạ KHÔNG đưa lên Git
-data/
+# Dữ liệu: bảng CSV được lưu phiên bản; ảnh gốc, bảng ánh xạ và ảnh đã ẩn danh thì KHÔNG
+# (bảng ánh xạ là chìa khóa gỡ ẩn danh – chỉ người giữ dữ liệu gốc giữ).
+data/raw/
+data/mapping/
+data/anon/
+data/ood/
+data/features/            # cache đặc trưng, tạo lại được
 !data/README.md
-results/
 *.zip
+
+# Kết quả chạy (tạo lại được bằng script)
+artifacts/results/
+
+# Backend: DB SQLite và ảnh sự kiện
+backend/data/
 
 # Python
 __pycache__/

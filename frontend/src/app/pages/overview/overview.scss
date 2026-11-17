@@ -1,0 +1,25 @@
+.stat { gap: 8px; padding: 22px 28px; }
+.stat-label { color: var(--muted); font-size: 16px; }
+.stat-value { font-size: 44px; font-weight: 700; line-height: 1.1; color: var(--ink); }
+.stat-value.grey { color: #2E3440; }
+
+.grid-2 { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); }
+.table-wrap { overflow-x: auto; }
+.see-all { font-size: 14px; }
+.warn-link { color: var(--warn-ink); font-weight: 500; }
+.plain-link { color: var(--ink-2); text-decoration: none; }
+.plain-link.ok-text { color: var(--teal); }
+
+.mis { display: flex; flex-direction: column; gap: 14px; }
+.mis-head { display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 6px; }
+.mis-track { height: 14px; border-radius: 999px; background: #E9ECEB; }
+.mis-fill { height: 100%; border-radius: 999px; background: var(--warn); }
+
+.mt { margin-top: 12px; }
+.stations { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; font-size: 16px; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #9CA3AF; margin-right: 12px; }
+.dot.on { background: var(--teal); }
+
+@media (max-width: 1100px) {
+  .grid-2 { grid-template-columns: 1fr; }
+}

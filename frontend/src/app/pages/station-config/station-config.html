@@ -1,0 +1,100 @@
+<div class="page">
+  <div class="page-head">
+    <h1>Cấu hình trạm</h1>
+    <label class="station-pick">
+      <span>Trạm</span>
+      <select class="field" [ngModel]="stationId()" (ngModelChange)="select($event)">
+        @for (s of stations(); track s.id) { <option [value]="s.id">{{ s.location }} · {{ s.name }}</option> }
+      </select>
+    </label>
+    @if (station(); as s) {
+      <span class="conn" [class.on]="s.online">
+        <span class="dot"></span>{{ s.online ? 'Đang kết nối' : 'Mất kết nối' }}
+      </span>
+    }
+  </div>
+
+  @if (station()) {
+    <div class="grid-2 cfg">
+      <section class="card">
+        <div class="card-head">
+          <h2>Ảnh camera · vẽ vùng thùng</h2>
+          <button type="button" class="btn" (click)="addZone()">+ Vẽ vùng mới</button>
+        </div>
+        <div #canvas class="canvas" (pointermove)="onMove($event)" (pointerup)="endDrag()" (pointercancel)="endDrag()">
+          <img [src]="snapshot()" alt="Ảnh camera gần nhất của trạm" draggable="false" />
+          @for (z of zones(); track z.zone_no) {
+            <div class="zone" [class.selected]="selected() === z.zone_no"
+              [style.left.%]="z.box[0] * 100" [style.top.%]="z.box[1] * 100"
+              [style.width.%]="z.box[2] * 100" [style.height.%]="z.box[3] * 100"
+              tabindex="0" role="button"
+              [attr.aria-label]="'Vùng ' + z.zone_no + ', thùng ' + z.bin_type + '. Mũi tên để dời, Shift + mũi tên để đổi kích thước'"
+              (pointerdown)="startDrag($event, z, 'move')" (keydown)="onKey($event, z)" (focus)="selected.set(z.zone_no)">
+              <span class="tag">Vùng {{ z.zone_no }} · {{ z.bin_type }}{{ selected() === z.zone_no ? ' (đang chọn)' : '' }}</span>
+              <span class="fill" [style.background]="store.bin(z.bin_type)?.color" [style.border-color]="store.bin(z.bin_type)?.border"></span>
+              <span class="handle" (pointerdown)="startDrag($event, z, 'resize')" aria-hidden="true"></span>
+            </div>
+          }
+        </div>
+        <p class="note">Kéo khung để bao sát miệng thùng, kéo góc dưới phải để đổi kích thước. Phần ngoài khung bị bỏ qua, không được lưu.</p>
+      </section>
+
+      <section class="card">
+        <h2>Các vùng thùng</h2>
+        <div class="zone-list">
+          @for (z of zones(); track z.zone_no) {
+            <div class="zone-row" [class.sel]="selected() === z.zone_no">
+              <label [for]="'zone-' + z.zone_no">Vùng {{ z.zone_no }}</label>
+              <select class="field" [id]="'zone-' + z.zone_no" [ngModel]="z.bin_type" (ngModelChange)="setBin(z.zone_no, $event)" (focus)="selected.set(z.zone_no)">
+                @for (b of store.bins(); track b.code) { <option [value]="b.code">{{ b.code }} · {{ b.short || b.name }}</option> }
+              </select>
+              <button type="button" class="icon-btn" (click)="removeZone(z.zone_no)" [attr.aria-label]="'Xóa vùng ' + z.zone_no">×</button>
+            </div>
+          } @empty {
+            <p class="note">Chưa có vùng nào. Bấm "+ Vẽ vùng mới".</p>
+          }
+        </div>
+
+        <hr />
+        <h2>Cách kích hoạt và cảnh báo</h2>
+        <label class="slider">
+          <span>Thời gian chờ ảnh đứng yên trước khi chụp: <b>{{ settings().still_seconds | vn: 1 }} giây</b></span>
+          <input type="range" min="0.5" max="3" step="0.1" [ngModel]="settings().still_seconds" (ngModelChange)="setSetting('still_seconds', +$event)" />
+        </label>
+        <label class="slider">
+          <span>Độ nhạy phát hiện chuyển động</span>
+          <input type="range" min="0" max="1" step="0.05" [ngModel]="settings().motion_sensitivity" (ngModelChange)="setSetting('motion_sensitivity', +$event)" />
+        </label>
+        <label class="slider">
+          <span>Âm lượng còi</span>
+          <input type="range" min="0" max="1" step="0.05" [ngModel]="settings().buzzer_volume" (ngModelChange)="setSetting('buzzer_volume', +$event)" />
+        </label>
+        <label class="dry">
+          <input type="checkbox" [ngModel]="settings().dry_run" (ngModelChange)="setSetting('dry_run', $event)" />
+          <span>Chế độ chạy thử: chỉ ghi nhật ký, không bật đèn/còi</span>
+        </label>
+      </section>
+    </div>
+
+    <div class="bottom">
+      <button type="button" class="btn primary big" (click)="save()" [disabled]="saving()">{{ saving() ? 'Đang lưu…' : 'Lưu cấu hình' }}</button>
+      <button type="button" class="btn big" (click)="testCapture()" [disabled]="testing() || selected() === null">
+        {{ testing() ? 'Đang kiểm tra…' : 'Chụp thử & kiểm tra' }}
+      </button>
+      <label class="upload note">
+        Ảnh thử (tùy chọn, bỏ trống để dùng ảnh camera):
+        <input type="file" accept="image/*" (change)="pickFile($event)" />
+      </label>
+      @if (saved()) { <span class="ok-text">Đã lưu cấu hình.</span> }
+    </div>
+
+    @if (testResult(); as d) {
+      <section class="card test-result">
+        <h2>Kết quả chụp thử · Vùng {{ selected() }} ({{ d.bin_type }})</h2>
+        <app-decision-view [decision]="d" />
+      </section>
+    }
+  } @else {
+    <div class="empty">Chưa có trạm nào hoặc chưa kết nối được máy chủ.</div>
+  }
+</div>

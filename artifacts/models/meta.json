@@ -1,0 +1,61 @@
+{
+  "labels": [
+    "L01",
+    "L02",
+    "L03",
+    "L04",
+    "L05",
+    "L06",
+    "L07",
+    "L08",
+    "L09",
+    "L10"
+  ],
+  "temperature": 0.3044782876968384,
+  "tau": 1.6578375101089478,
+  "score": "joint_energy",
+  "backbone": "efficientnet_b0",
+  "trained_on": "mw40_v01",
+  "trained_labels": [
+    "L03",
+    "L04",
+    "L05"
+  ],
+  "warning": "Chỉ huấn luyện trên Medical Waste 4.0: 3/10 nhãn, mỗi lớp chụp trong một phiên → điểm val cao ảo; chỉ để chạy thử, không phải bằng chứng",
+  "metrics": {
+    "val_mAP_3_seed": {
+      "mean": 1.0,
+      "std": 0.0,
+      "per_seed": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "best_seed": 0,
+    "best_seed_val_after_T": {
+      "ap": {
+        "L03": 1.0,
+        "L04": 1.0,
+        "L05": 1.0
+      },
+      "mAP": 1.0,
+      "macro_f1": 0.9682957943827509,
+      "exact_match": 0.8687258687258688
+    },
+    "val_rate_any_untrained_label_flagged": 0.0,
+    "temperature": 0.3044782876968384,
+    "temperature_note": "T fit trên chính val (không có test riêng) → lạc quan",
+    "open_set": {
+      "score": "joint_energy",
+      "tau_keep_95pct_val": 1.6578375101089478,
+      "auroc_val_vs_ood_near": 0.626967626967627,
+      "ood_accepted_rate_at_tau": 0.8135198135198135,
+      "n_val": 259,
+      "n_ood": 429
+    },
+    "onnx_max_abs_diff": 3.4332275390625e-05
+  },
+  "created_at": "2026-11-17T15:29:09+00:00",
+  "commit": "a5d0bd9"
+}

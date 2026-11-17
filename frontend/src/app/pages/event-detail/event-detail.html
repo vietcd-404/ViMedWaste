@@ -1,0 +1,93 @@
+<div class="page">
+  <a routerLink="/tong-quan" class="back">← Về tổng quan</a>
+
+  @if (event(); as e) {
+    <div class="page-head">
+      <h1>{{ e.title }}</h1>
+      <app-status-badge [status]="e.status" />
+      <span class="meta">{{ e.station_name }} · Vùng {{ e.zone_no }} ({{ e.bin_type }}) · {{ e.time | dateTime }}</span>
+      @if (e.simulated) { <span class="badge sim">Dữ liệu mô phỏng</span> }
+    </div>
+
+    <div class="grid-2 detail">
+      <section class="card">
+        <div class="card-head">
+          <h2>Ảnh trước và sau lần bỏ rác</h2>
+          @if (e.images.gradcam) {
+            <label class="check">
+              <input type="checkbox" [checked]="showCam()" (change)="showCam.set($any($event.target).checked)" />
+              Hiện Grad-CAM
+            </label>
+          }
+        </div>
+        <div class="frames">
+          <figure>
+            <div class="frame" [style.border-color]="binColor(e)">
+              @if (e.images.before) {
+                <img [src]="e.images.before" alt="Miệng thùng trước lần bỏ rác" />
+              } @else {
+                <div class="no-img">Không có ảnh trước</div>
+              }
+            </div>
+            <figcaption>Trước</figcaption>
+          </figure>
+          <figure>
+            <div class="frame" [style.border-color]="binColor(e)">
+              <img [src]="afterSrc(e)" alt="Miệng thùng sau lần bỏ rác" />
+              @if (e.change_box; as b) {
+                <div class="change-box"
+                  [style.left.%]="b[0] * 100" [style.top.%]="b[1] * 100"
+                  [style.width.%]="b[2] * 100" [style.height.%]="b[3] * 100"></div>
+              }
+            </div>
+            <figcaption>Sau · khung cam là vùng mới thay đổi</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Mô hình AI nhận ra</h2>
+        <app-label-bars [labels]="e.decision.labels" [onlyPresent]="true" />
+        @if (e.decision.ood_score !== null && e.decision.tau !== null) {
+          <p class="note">
+            @if (e.decision.accepted) {
+              Điểm quen thuộc S(x) = {{ e.decision.ood_score | vn: 2 }} trên ngưỡng τ = {{ e.decision.tau | vn: 2 }}, nên hệ thống được phép kết luận.
+            } @else {
+              Điểm quen thuộc S(x) = {{ e.decision.ood_score | vn: 2 }} dưới ngưỡng τ = {{ e.decision.tau | vn: 2 }}: ảnh lạ, hệ thống không đưa ra nhãn.
+            }
+          </p>
+        }
+        @if (e.decision.model.warning) {
+          <p class="model-warn">{{ e.decision.model.warning }}</p>
+        }
+
+        <hr />
+        <h2>Diễn biến</h2>
+        <ol class="timeline">
+          @for (t of e.timeline; track $index) {
+            <li><span class="tnum">{{ t.time | hhmm }}</span> {{ t.text }}</li>
+          }
+        </ol>
+
+        <label class="handling">Trạng thái xử lý
+          <select class="field" [value]="e.handling ?? 'CHUA_XU_LY'" (change)="setHandling($any($event.target).value)">
+            @for (h of handlings; track h) { <option [value]="h">{{ handlingText[h] }}</option> }
+          </select>
+        </label>
+
+        <div class="actions">
+          <button type="button" class="btn primary" [disabled]="busy()" (click)="sendFeedback('DUNG')">Xác nhận đúng</button>
+          <button type="button" class="btn" [disabled]="busy()" (click)="sendFeedback('NHAM')">Báo nhầm</button>
+        </div>
+        @if (e.feedback) {
+          <p class="feedback-done">
+            Đã ghi nhận: {{ e.feedback === 'DUNG' ? 'xác nhận đúng' : 'báo nhầm, ảnh đã vào hàng chờ gán nhãn lại' }}.
+          </p>
+        }
+        <p class="note">Ảnh bị báo nhầm được đưa vào hàng chờ gán nhãn lại để huấn luyện bổ sung mô hình.</p>
+      </section>
+    </div>
+  } @else if (notFound()) {
+    <div class="empty">Không tìm thấy sự kiện này.</div>
+  }
+</div>

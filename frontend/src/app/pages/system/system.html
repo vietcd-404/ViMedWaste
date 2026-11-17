@@ -1,0 +1,166 @@
+<div class="page">
+  <h1>Cách hệ thống hoạt động</h1>
+  <p class="page-sub">Một trạm gồm camera, Raspberry Pi chạy mô hình và đèn/còi trên từng thùng; Dashboard này nhận nhật ký từ các trạm.</p>
+
+  <section class="card">
+    <h2>Luồng tự động của thùng thông minh</h2>
+    <div class="svg-wrap">
+      <svg viewBox="0 0 1280 640" role="img" aria-labelledby="flow-title flow-desc" class="flow">
+        <title id="flow-title">Luồng tự động của thùng thông minh</title>
+        <desc id="flow-desc">Camera theo dõi, nhân viên bỏ rác, thiết bị chụp vùng thay đổi, mô hình trên Pi tính 10 xác suất. Ảnh lạ thì ghi không xác định; có nhãn không được phép thì bật đèn đỏ và bíp, nhân viên lấy vật ra; ngược lại là phù hợp. Mọi sự kiện được ghi nhật ký và gửi về Dashboard.</desc>
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="#4B5563" />
+          </marker>
+        </defs>
+
+        <!-- Hàng trên -->
+        <rect x="45" y="87" width="153" height="50" rx="25" class="n-dark" />
+        <text x="121" y="108" class="t-light b">Lắp đặt 1 lần</text>
+        <text x="121" y="126" class="t-light">cấu hình vùng thùng</text>
+
+        <rect x="242" y="87" width="153" height="50" rx="6" class="n-dev" />
+        <text x="318" y="108" class="t">Camera theo dõi</text>
+        <text x="318" y="126" class="t">chuyển động</text>
+
+        <rect x="440" y="87" width="152" height="50" rx="6" class="n-human" />
+        <text x="516" y="108" class="t">Nhân viên bỏ rác</text>
+        <text x="516" y="126" class="t">như bình thường</text>
+
+        <rect x="637" y="87" width="167" height="50" rx="6" class="n-dev" />
+        <text x="720" y="108" class="t">Tay rút ra, ảnh yên ~1 s</text>
+        <text x="720" y="126" class="t">→ chụp vùng thay đổi</text>
+
+        <rect x="849" y="87" width="180" height="50" rx="6" class="n-dev" />
+        <text x="939" y="108" class="t b">Mô hình trên Pi</text>
+        <text x="939" y="126" class="t">10 xác suất đã hiệu chuẩn</text>
+
+        <line x1="198" y1="112" x2="240" y2="112" class="edge" />
+        <line x1="395" y1="112" x2="438" y2="112" class="edge" />
+        <line x1="592" y1="112" x2="635" y2="112" class="edge" />
+        <line x1="804" y1="112" x2="847" y2="112" class="edge" />
+        <line x1="939" y1="137" x2="939" y2="179" class="edge" />
+
+        <!-- Quyết định 1 -->
+        <polygon points="939,181 1021,222 939,263 857,222" class="n-dec" />
+        <text x="939" y="217" class="t">Ảnh quen thuộc?</text>
+        <text x="939" y="235" class="t">S(x) ≥ τ</text>
+
+        <rect x="627" y="198" width="166" height="49" rx="6" class="n-unk" />
+        <text x="710" y="218" class="t">Ghi <tspan class="b">không xác định</tspan></text>
+        <text x="710" y="236" class="t">không báo động</text>
+        <line x1="857" y1="222" x2="795" y2="222" class="edge" />
+        <text x="824" y="212" class="t-small">không</text>
+
+        <line x1="939" y1="263" x2="939" y2="306" class="edge" />
+        <text x="955" y="290" class="t-small" text-anchor="start">có</text>
+
+        <!-- Quyết định 2 -->
+        <polygon points="939,308 1041,357 939,406 837,357" class="n-dec" />
+        <text x="939" y="352" class="t">Có nhãn không được</text>
+        <text x="939" y="370" class="t">phép trong thùng b?</text>
+
+        <rect x="613" y="333" width="166" height="49" rx="6" class="n-warn" />
+        <text x="696" y="353" class="t b">Đèn đỏ + bíp</text>
+        <text x="696" y="371" class="t">tại thùng bị bỏ sai</text>
+        <line x1="837" y1="357" x2="781" y2="357" class="edge" />
+        <text x="808" y="347" class="t-small">có</text>
+
+        <rect x="1100" y="333" width="138" height="49" rx="6" class="n-ok" />
+        <text x="1169" y="353" class="t b">Phù hợp</text>
+        <text x="1169" y="371" class="t">không báo</text>
+        <line x1="1041" y1="357" x2="1098" y2="357" class="edge" />
+        <text x="1070" y="347" class="t-small">không</text>
+
+        <rect x="415" y="333" width="152" height="49" rx="6" class="n-human" />
+        <text x="491" y="353" class="t">Nhân viên lấy vật ra,</text>
+        <text x="491" y="371" class="t">bỏ đúng thùng</text>
+        <line x1="613" y1="357" x2="569" y2="357" class="edge" />
+
+        <!-- Vòng lặp nét đứt -->
+        <polyline points="491,333 491,167 318,167 318,139" class="edge dash" />
+        <text x="335" y="156" class="t-small" text-anchor="start">theo dõi tiếp</text>
+
+        <!-- Nhật ký và Dashboard -->
+        <line x1="696" y1="382" x2="696" y2="472" class="edge" />
+        <line x1="1169" y1="382" x2="1169" y2="472" class="edge" />
+        <rect x="571" y="474" width="667" height="49" rx="6" class="n-dev" />
+        <text x="904" y="503" class="t"><tspan class="b">Ghi nhật ký mọi sự kiện</tspan> (cảnh báo, phù hợp, không xác định) → gửi về Dashboard</text>
+        <line x1="904" y1="523" x2="904" y2="566" class="edge" />
+        <rect x="801" y="568" width="207" height="49" rx="24" class="n-dark" />
+        <text x="904" y="588" class="t-light">Quản lý xem Dashboard,</text>
+        <text x="904" y="606" class="t-light">xác nhận đúng/sai, tập huấn</text>
+      </svg>
+    </div>
+    <ul class="legend">
+      <li><span class="sw human"></span>Việc của con người</li>
+      <li><span class="sw dev"></span>Thiết bị tự xử lý</li>
+      <li><span class="sw warn"></span>Cảnh báo</li>
+      <li><span class="sw ok"></span>Phù hợp</li>
+      <li><span class="sw unk"></span>Không xác định</li>
+      <li>Nét đứt: quay lại theo dõi lần bỏ tiếp theo</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>Sơ đồ lắp đặt một trạm thùng thông minh</h2>
+    <p class="note">Nhìn ngang một xe/cụm 4 thùng. Kích thước là gợi ý, chỉnh theo thực tế khi lắp.</p>
+    <div class="install">
+      <div class="svg-wrap">
+        <svg viewBox="40 110 700 610" role="img" aria-labelledby="ins-title" class="ins">
+          <title id="ins-title">Sơ đồ lắp đặt: camera trên tay đỡ chĩa xuống 4 thùng B1, B2, B4, B5; Raspberry Pi dưới khay; đèn đỏ sáng trên thùng B4</title>
+          <rect x="44" y="120" width="692" height="600" rx="20" fill="#F3F5F4" />
+          <!-- Khung đỡ -->
+          <rect x="110" y="157" width="12" height="510" rx="4" fill="#8A9692" />
+          <rect x="110" y="178" width="345" height="10" rx="4" fill="#8A9692" />
+          <rect x="180" y="193" width="230" height="8" rx="4" fill="#F4D04E" stroke="#C9A227" />
+          <polyline points="128,205 128,466" fill="none" stroke="#1F2933" stroke-width="1.5" />
+          <line x1="128" y1="205" x2="410" y2="205" stroke="#1F2933" stroke-width="1.5" />
+          <!-- Vùng nhìn -->
+          <polygon points="436,222 145,466 700,466" fill="#E2ECEA" stroke="#0E6E62" stroke-width="1.5" stroke-dasharray="6 5" />
+          <!-- Camera -->
+          <rect x="408" y="188" width="56" height="34" rx="4" fill="#1F2933" />
+          <circle cx="436" cy="222" r="7" fill="#5B6575" stroke="#fff" stroke-width="2" />
+          <!-- Thùng -->
+          <rect x="130" y="466" width="118" height="84" rx="4" fill="#F2C318" stroke="#8A6D0C" stroke-width="3" />
+          <rect x="266" y="466" width="117" height="84" rx="4" fill="#F2C318" />
+          <rect x="401" y="466" width="117" height="84" rx="4" fill="#2F8A3D" />
+          <rect x="536" y="466" width="117" height="84" rx="4" fill="#FFFFFF" stroke="#9CA3AF" stroke-width="2" />
+          <text x="189" y="515" class="bin-t">B1</text>
+          <text x="324" y="515" class="bin-t">B2</text>
+          <text x="459" y="515" class="bin-t" fill="#fff">B4</text>
+          <text x="594" y="515" class="bin-t">B5</text>
+          <!-- Đèn trên thùng -->
+          <circle cx="189" cy="457" r="6" fill="#CDD2CF" />
+          <circle cx="324" cy="457" r="6" fill="#CDD2CF" />
+          <circle cx="459" cy="457" r="14" fill="#F6C7C7" opacity=".8" />
+          <circle cx="459" cy="457" r="7" fill="#DC2626" />
+          <circle cx="594" cy="457" r="6" fill="#CDD2CF" />
+          <!-- Khay và xe -->
+          <rect x="116" y="550" width="557" height="18" rx="4" fill="#AEB8B4" />
+          <rect x="116" y="568" width="557" height="88" rx="6" fill="#DCE1DE" />
+          <rect x="180" y="603" width="87" height="44" rx="6" fill="#1F2933" />
+          <text x="223" y="630" class="pi-t">Pi</text>
+          <path d="M282 600 q10 -9 22 0 M286 606 q6 -5 14 0" fill="none" stroke="#1F2933" stroke-width="2" />
+          <circle cx="153" cy="672" r="25" fill="#5B6575" />
+          <circle cx="636" cy="672" r="25" fill="#5B6575" />
+          <!-- Chiều cao -->
+          <line x1="700" y1="222" x2="700" y2="458" stroke="#1F2933" stroke-width="1.5" />
+          <line x1="692" y1="222" x2="708" y2="222" stroke="#1F2933" stroke-width="1.5" />
+          <line x1="692" y1="458" x2="708" y2="458" stroke="#1F2933" stroke-width="1.5" />
+          <text x="690" y="345" class="dim-t">~0,8–1 m</text>
+          <!-- Số chú thích -->
+          @for (b of badges; track b.n) {
+            <circle [attr.cx]="b.x" [attr.cy]="b.y" r="13" fill="#0E6E62" />
+            <text [attr.x]="b.x" [attr.y]="b.y + 5" class="badge-t">{{ b.n }}</text>
+          }
+        </svg>
+      </div>
+      <ol class="points">
+        @for (p of points; track p.n) {
+          <li><span class="num">{{ p.n }}</span><span><b>{{ p.title }}</b> {{ p.text }}</span></li>
+        }
+      </ol>
+    </div>
+  </section>
+</div>

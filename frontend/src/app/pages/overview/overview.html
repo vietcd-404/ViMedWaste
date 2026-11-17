@@ -1,0 +1,98 @@
+<div class="page">
+  <div class="page-head">
+    <h1>Tổng quan hôm nay</h1>
+    @if (simulated()) {
+      <span class="badge sim">Dữ liệu mô phỏng</span>
+    }
+  </div>
+
+  @let ov = overview();
+  <div class="grid-4">
+    <div class="stat card">
+      <span class="stat-label">Lượt bỏ rác ghi nhận</span>
+      <span class="stat-value tnum">{{ ov ? (ov.total | vn) : '–' }}</span>
+    </div>
+    <div class="stat card">
+      <span class="stat-label">Cảnh báo bỏ sai</span>
+      <span class="stat-value tnum warn-text">{{ ov ? (ov.warnings | vn) : '–' }}</span>
+    </div>
+    <div class="stat card">
+      <span class="stat-label">Cảnh báo đã được xử lý</span>
+      <span class="stat-value tnum ok-text">{{ ov ? (ov.handled_pct | pct) : '–' }}</span>
+    </div>
+    <div class="stat card">
+      <span class="stat-label">Không xác định</span>
+      <span class="stat-value tnum grey">{{ ov ? (ov.unknown | vn) : '–' }}</span>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <section class="card">
+      <div class="card-head">
+        <h2>Sự kiện mới nhất</h2>
+        <a routerLink="/su-kien" class="see-all">Xem tất cả</a>
+      </div>
+      @if (events().length) {
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead>
+              <tr><th>Giờ</th><th>Trạm · Thùng</th><th>Kết quả</th><th>Trạng thái</th></tr>
+            </thead>
+            <tbody>
+              @for (e of events(); track e.id) {
+                <tr>
+                  <td class="tnum">{{ e.time | hhmm }}</td>
+                  <td>{{ e.station_name }} · {{ e.bin_type }}</td>
+                  <td>
+                    @if (e.status === 'CANH_BAO') {
+                      <a class="warn-link" [routerLink]="['/su-kien', e.id]">{{ e.title }}</a>
+                    } @else {
+                      <a class="plain-link" [class.ok-text]="e.status === 'PHU_HOP'" [routerLink]="['/su-kien', e.id]">
+                        {{ statusText[e.status] }}
+                      </a>
+                    }
+                  </td>
+                  <td>{{ e.handling ? handlingText[e.handling] : '–' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else if (!loading()) {
+        <div class="empty">
+          <span>Chưa có sự kiện nào hôm nay.</span>
+          <button type="button" class="btn small" (click)="simulate()" [disabled]="simulating()">
+            {{ simulating() ? 'Đang sinh dữ liệu…' : 'Sinh dữ liệu mô phỏng' }}
+          </button>
+          <span class="note">Dùng ảnh Medical Waste 4.0 để tạo sự kiện thử, được gắn nhãn "mô phỏng".</span>
+        </div>
+      }
+    </section>
+
+    <section class="card">
+      <h2>Vật bị bỏ sai nhiều nhất</h2>
+      @if (ov?.top_mislabels?.length) {
+        <div class="mis">
+          @for (m of ov!.top_mislabels; track m.code) {
+            <div class="mis-row">
+              <div class="mis-head"><span>{{ m.code }} · {{ m.name }}</span><span class="tnum muted">{{ m.count | vn }}</span></div>
+              <div class="mis-track"><div class="mis-fill" [style.width.%]="(m.count / maxMislabel()) * 100"></div></div>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="note">Chưa có cảnh báo bỏ sai.</p>
+      }
+      <p class="note">Dùng để chọn nội dung tập huấn cho từng khoa. Không hiển thị hay lưu thông tin cá nhân.</p>
+
+      <h2 class="mt">Tình trạng trạm</h2>
+      <ul class="stations">
+        @for (s of ov?.stations ?? []; track s.id) {
+          <li><span class="dot" [class.on]="s.online"></span>{{ s.name }} · {{ s.online ? 'đang chạy' : 'mất kết nối' }}</li>
+        } @empty {
+          <li class="note">Chưa có trạm.</li>
+        }
+      </ul>
+    </section>
+  </div>
+</div>

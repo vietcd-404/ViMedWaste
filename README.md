@@ -1,78 +1,73 @@
-# ViMedWaste – Khung dữ liệu
+# ViMedWaste
 
-Code cho khung kiến trúc dữ liệu giai đoạn đầu: từ ảnh chụp miệng thùng đến Dataset v1.0.
-Đặc tả gốc: `../06_DAC_TA_TRIEN_KHAI.md` (mục 2–3) và `../08_AP_DUNG_KIEN_THUC_ML.md` (mục 2).
+Phát hiện chất thải y tế bỏ sai thùng **tại nguồn** theo Thông tư 20/2021: ảnh miệng thùng + loại thùng → **CẢNH BÁO / PHÙ HỢP / KHÔNG XÁC ĐỊNH**.
+Phân loại đa nhãn 10 nhãn (L01–L10), 5 loại thùng (B1–B5), nhận dạng lớp mở, chạy ONNX trên CPU.
 
-## Cài đặt
+> Mô hình hiện tại chỉ huấn luyện trên dữ liệu ngoài Medical Waste 4.0 (3/10 nhãn) để chạy thử toàn bộ hệ thống. Không dùng làm bằng chứng cho giả thuyết.
 
-```powershell
-# từ thư mục NCKH_ViMedWaste (đã có .venv)
-.\.venv\Scripts\Activate.ps1
-pip install -e ".\ViMedWaste[dev]"
-cd ViMedWaste
-pytest
+## Kiến trúc
+
+```
+                ┌────────── src/vimedwaste  (thư viện ML) ──────────┐
+ ảnh tự chụp ─► │ data/      bước 2: ẩn danh, gán nhãn, κ, lọc trùng, │
+ dữ liệu ngoài  │            chia tập, kiểm tra                       │
+                │ training/  bước 3–5: train, hiệu chuẩn, xuất ONNX ──┼─► artifacts/models/
+                │ serving/   suy luận ONNX + quy tắc cảnh báo         │      vimedwaste.onnx
+                │ core/      đường dẫn, cấu hình nhãn, lược đồ        │      meta.json
+                └───────────────────────────┬─────────────────────────┘
+                                            │ import
+ Raspberry Pi ──POST /capture──►  backend/ (FastAPI :8000) ◄──/api──  frontend/ (Angular :4200)
+                                  SQLite + ảnh sự kiện                 quản lý trạm, sự kiện
 ```
 
-## Cấu trúc
+Chi tiết: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · API: [docs/API.md](docs/API.md) · Dữ liệu: [docs/DATA_PIPELINE.md](docs/DATA_PIPELINE.md)
+
+## Cấu trúc thư mục
 
 ```
 ViMedWaste/
-├─ configs/labels.yaml          10 nhãn, 5 thùng, ma trận A, ngưỡng κ, tỷ lệ chia   (Việt)
-├─ vimedwaste/
-│  ├─ config.py                 đọc cấu hình, hàm violations() sinh cảnh báo
-│  ├─ schema.py                 tên cột của 4 bảng                                   (Việt)
-│  ├─ utils.py                  ghi results/*.json kèm commit + seed
-│  └─ data/
-│     ├─ anonymize.py           Bước 2: xóa EXIF, đổi tên UUID, sinh metadata        (Đạt)
-│     ├─ cvat_export.py         Bước 3: CVAT XML → annotations.csv                   (Việt)
-│     ├─ agreement.py           Bước 4: κ từng nhãn, phân xử → labels.csv            (Lâm)
-│     ├─ dedup.py               lọc ảnh trùng / rò rỉ giữa các tập (perceptual hash) (Lâm)
-│     ├─ split.py               Bước 5: chia theo nhóm, cân tần suất nhãn            (Lâm)
-│     ├─ validate_metadata.py   Bước 6: kiểm tra ràng buộc trước khi phát hành       (Em)
-│     └─ import_mw40.py         nhập Medical Waste 4.0 làm dữ liệu ngoài             (Việt)
-├─ tests/                       pytest cho từng script
-└─ data/                        KHÔNG đưa lên Git (xem .gitignore)
-   ├─ raw/  mapping/            chỉ người giữ dữ liệu gốc
-   ├─ anon/  ood/               ảnh đã ẩn danh
-   ├─ external/mw40_v01/        bảng của dữ liệu ngoài
-   └─ tables/                   metadata, annotations, labels, splits
+├─ configs/labels.yaml     10 nhãn, 5 thùng, ma trận tương thích, chi phí sai, ngưỡng κ
+├─ src/vimedwaste/         thư viện ML (pip install -e .)
+│  ├─ core/                paths · config · schema · utils
+│  ├─ data/                bước 2 – tiền xử lý dữ liệu
+│  ├─ training/            bước 3–5 – train_mw40.py
+│  └─ serving/             inference.py (ONNX) · decision.py (cảnh báo)
+├─ backend/                FastAPI: main · schemas · routers/ · services/
+├─ frontend/               Angular 20
+├─ demo/                   giao diện Streamlit cũ (demo nhanh)
+├─ artifacts/              do code sinh ra: models/ (ONNX, meta.json) · results/ (*.json)
+├─ data/                   external/ (bảng dữ liệu ngoài) · tables/ · raw/ (không lên Git)
+├─ docs/                   ARCHITECTURE · API · DATA_PIPELINE
+├─ scripts/dev.ps1         lệnh chạy nhanh
+└─ tests/                  core · data · training · serving · backend · demo
 ```
 
-## Luồng chạy cho một lô ảnh tự chụp
+## Chạy nhanh
+
+Yêu cầu: Python 3.11 (môi trường ảo `..\.venv`), Node 20+.
 
 ```powershell
-# 1–2. Ẩn danh (sau khi đã làm mờ thông tin bệnh nhân và loại ảnh có người)
-python -m vimedwaste.data.anonymize --src data\raw\2026-11-20_S01 --site S01 --date 2026-11-20 --bin B2
-python -m vimedwaste.data.dedup --metadata data\tables\metadata.csv
+.\scripts\dev.ps1 setup       # lần đầu: cài Python package + npm install
+.\scripts\dev.ps1 test        # toàn bộ test
 
-# 3. Gán nhãn trên CVAT (tag L01…L10, bad_quality), mỗi người một task, rồi xuất XML
-python -m vimedwaste.data.cvat_export --xml exports\lo01_dat.xml --annotator dat --batch lo01
-python -m vimedwaste.data.cvat_export --xml exports\lo01_lam.xml --annotator lam --batch lo01
+.\scripts\dev.ps1 backend     # terminal 1 → http://localhost:8000/docs
+.\scripts\dev.ps1 frontend    # terminal 2 → http://localhost:4200
+.\scripts\dev.ps1 simulate    # sinh sự kiện mô phỏng cho trang Tổng quan
 
-# 4. Đồng thuận và phân xử
-python -m vimedwaste.data.agreement kappa --batch lo01
-python -m vimedwaste.data.agreement resolve            # → labels.csv, disagreements.csv
-python -m vimedwaste.data.agreement resolve --adjudication data\tables\adjudication.csv
-
-# 5–6. Chia tập (một lần, sau đó khóa), kiểm tra rò rỉ và ràng buộc
-python -m vimedwaste.data.split
-python -m vimedwaste.data.dedup --metadata data\tables\metadata.csv --splits data\tables\splits.csv
-python -m vimedwaste.data.validate_metadata --check-files
+.\scripts\dev.ps1 train       # train lại mô hình → artifacts/models/
 ```
 
-## Dữ liệu ngoài: Medical Waste 4.0
+PowerShell chặn script thì chạy một lần: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 
-```powershell
-python -m vimedwaste.data.import_mw40 --src "..\Medical Waste 4.0"
-python -m vimedwaste.data.validate_metadata --tables data\external\mw40_v01 --check-files
-python -m vimedwaste.data.dedup --metadata data\external\mw40_v01\metadata.csv --splits data\external\mw40_v01\splits.csv --tag mw40
-```
+## Quy trình phát triển
 
-Quy tắc: chỉ dùng chạy thử và pretrain; không vào test; không tính vào 2.500 ảnh.
-Mỗi lớp được chụp trong một phiên ngắn với cùng vài vật, nên chia theo khối thời gian, không chia ngẫu nhiên.
+Theo 6 bước (bám bài giảng Thân Quang Khoát, `../11_HE_THONG_PROMPT_THUC_CHIEN.md`):
 
-## Việc làm tay
-
-- Làm mờ tên người bệnh, mã hồ sơ, tên khoa trên bao bì; loại ảnh có người (`--exclude`).
-- Xem lại vài cặp trong `near_duplicates.csv` để chỉnh ngưỡng `phash_max_distance`.
-- Người thứ ba phân xử các ảnh trong `disagreements.csv`, ghi vào `adjudication.csv` cùng cột với annotations.
+| Bước | Ở đâu trong code | Trạng thái |
+|---|---|---|
+| 1. Xác định bài toán T-P-E | `configs/labels.yaml` | Xong |
+| 2. Tiền xử lý dữ liệu | `src/vimedwaste/data/` | Khung + code xong, chờ ảnh tự chụp |
+| 3. Mô hình & baseline | `src/vimedwaste/training/` | Chạy thử trên dữ liệu ngoài |
+| 4. Hàm mất mát & regularization | `src/vimedwaste/training/` | Chạy thử |
+| 5. Đánh giá & tránh rò rỉ | `data/split.py`, `data/dedup.py`, `training/` | Chạy thử |
+| 6. Phân tích & vòng lặp | `backend` phản hồi "Báo nhầm" → hàng chờ gán nhãn lại | Có khung |

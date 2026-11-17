@@ -9,16 +9,17 @@ bins:
   B5: Túi, thùng màu trắng (tái chế)
 
 labels:
-  L01: {name: Kim tiêm, bơm tiêm liền kim, group: lay_nhiem_sac_nhon, c_fn: 10}
-  L02: {name: Vật sắc nhọn khác, group: lay_nhiem_sac_nhon, c_fn: 10}
-  L03: {name: Bông, băng, gạc, group: lay_nhiem_khong_sac_nhon, c_fn: 5}
-  L04: {name: Găng tay y tế, group: lay_nhiem_khong_sac_nhon, c_fn: 5}
-  L05: {name: Dây truyền, ống dẫn, túi dịch, group: lay_nhiem_khong_sac_nhon, c_fn: 5}
-  L06: {name: Bao bì có cảnh báo nguy hại, group: nguy_hai, c_fn: 5}
-  L07: {name: Thiết bị chứa thủy ngân, group: nguy_hai, c_fn: 5}
-  L08: {name: Chai, lọ sạch, group: tai_che, c_fn: 1}
-  L09: {name: Giấy, bìa carton, group: tai_che, c_fn: 1}
-  L10: {name: Chất thải sinh hoạt, group: thong_thuong, c_fn: 1}
+  # Tên có dấu phẩy phải đặt trong ngoặc kép, nếu không YAML cắt tên tại dấu phẩy.
+  L01: {name: "Kim tiêm, bơm tiêm liền kim", group: lay_nhiem_sac_nhon, c_fn: 10}
+  L02: {name: "Vật sắc nhọn khác", group: lay_nhiem_sac_nhon, c_fn: 10}
+  L03: {name: "Bông, băng, gạc", group: lay_nhiem_khong_sac_nhon, c_fn: 5}
+  L04: {name: "Găng tay y tế", group: lay_nhiem_khong_sac_nhon, c_fn: 5}
+  L05: {name: "Dây truyền, ống dẫn, túi dịch", group: lay_nhiem_khong_sac_nhon, c_fn: 5}
+  L06: {name: "Bao bì có cảnh báo nguy hại", group: nguy_hai, c_fn: 5}
+  L07: {name: "Thiết bị chứa thủy ngân", group: nguy_hai, c_fn: 5}
+  L08: {name: "Chai, lọ sạch", group: tai_che, c_fn: 1}
+  L09: {name: "Giấy, bìa carton", group: tai_che, c_fn: 1}
+  L10: {name: "Chất thải sinh hoạt", group: thong_thuong, c_fn: 1}
 
 # 1 = được phép bỏ vào thùng đó. L03–L05 được phép bỏ thêm vào B1.
 compatibility:

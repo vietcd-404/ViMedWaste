@@ -1,0 +1,47 @@
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" routerLink="/tong-quan">
+      <svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+        <path d="M12 11v6M9 14h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      <span>
+        <span class="brand-name">ViMedWaste</span>
+        <span class="brand-sub">Quản lý trạm thùng thông minh</span>
+      </span>
+    </a>
+
+    <nav class="nav" aria-label="Điều hướng chính">
+      @for (item of nav; track item.path) {
+        <a [routerLink]="item.path" routerLinkActive="active" ariaCurrentWhenActive="page">{{ item.text }}</a>
+      }
+    </nav>
+
+    <div class="model-box">
+      <div class="model-title">Mô hình đang dùng</div>
+      @if (model(); as m) {
+        @if (m.available) {
+          <div class="model-line">{{ modelLine(m) }}</div>
+          @if (externalOnly(m)) {
+            <div class="model-warn">Mới huấn luyện trên dữ liệu ngoài ({{ m.trained_on }}), chỉ để chạy thử.</div>
+          }
+        } @else {
+          <div class="model-line">Chưa có mô hình</div>
+        }
+      } @else {
+        <div class="model-line">Chưa kết nối máy chủ</div>
+      }
+      <div class="model-note">Ảnh được xử lý ngay trên máy, không gửi ra ngoài.</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    @if (api.lastError(); as err) {
+      <div class="banner-error global-error" role="alert">
+        <span>{{ err }}</span>
+        <button type="button" class="close" (click)="api.lastError.set(null)" aria-label="Đóng thông báo">×</button>
+      </div>
+    }
+    <router-outlet />
+  </main>
+</div>

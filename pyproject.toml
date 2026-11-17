@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "vimedwaste"
 version = "0.1.0"
-description = "Khung dữ liệu ViMedWaste: cảnh báo bỏ sai chất thải y tế theo TT 20/2021"
+description = "ViMedWaste: cảnh báo bỏ sai chất thải y tế tại nguồn theo TT 20/2021"
 requires-python = ">=3.11"
 dependencies = [
   "numpy>=1.26",
@@ -16,10 +16,18 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+serve = ["onnxruntime>=1.18"]
+train = ["torch>=2.3", "torchvision>=0.18", "scikit-learn>=1.4", "onnx>=1.16", "onnxscript"]
+api = ["fastapi>=0.110", "uvicorn[standard]>=0.29", "python-multipart>=0.0.9", "httpx>=0.27", "onnxruntime>=1.18"]
+demo = ["streamlit>=1.40", "onnxruntime>=1.18"]
 dev = ["pytest>=8.0"]
+all = ["vimedwaste[train,api,demo,dev]"]
 
 [tool.setuptools.packages.find]
+where = ["src"]
 include = ["vimedwaste*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]                 # để import được package backend/
+addopts = "--import-mode=importlib"
