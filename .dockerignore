@@ -1,0 +1,22 @@
+# Chỉ những gì Dockerfile cần; không đưa dữ liệu gốc, DB dev, cache vào image
+**/__pycache__
+**/*.egg-info
+.git
+.venv
+.pytest_cache
+backend/data
+artifacts/results
+data/raw
+data/mapping
+data/anon
+data/ood
+data/features
+data/external
+data/tables
+frontend/node_modules
+frontend/dist
+frontend/.angular
+build
+demo
+tests
+docs

@@ -1,15 +1,19 @@
-# Dữ liệu: bảng CSV được lưu phiên bản; ảnh gốc, bảng ánh xạ và ảnh đã ẩn danh thì KHÔNG
-# (bảng ánh xạ là chìa khóa gỡ ẩn danh – chỉ người giữ dữ liệu gốc giữ).
+# Lưu ý: git KHÔNG hiểu chú thích cùng dòng với mẫu, luôn viết chú thích trên dòng riêng.
+
+# Dữ liệu: bảng CSV và bộ ảnh demo (data/demo, ảnh CC BY thu nhỏ) được lưu phiên bản.
+# Ảnh gốc, bảng ánh xạ, ảnh đã ẩn danh thì KHÔNG (bảng ánh xạ là chìa khóa gỡ ẩn danh).
 data/raw/
 data/mapping/
 data/anon/
 data/ood/
-data/features/            # cache đặc trưng, tạo lại được
+# cache đặc trưng, tạo lại được
+data/features/
 !data/README.md
 *.zip
 
-# Kết quả chạy (tạo lại được bằng script)
+# Tạo lại được bằng script
 artifacts/results/
+build/
 
 # Backend: DB SQLite và ảnh sự kiện
 backend/data/

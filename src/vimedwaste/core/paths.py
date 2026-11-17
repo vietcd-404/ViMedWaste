@@ -1,9 +1,11 @@
 """Mọi đường dẫn của dự án ở một chỗ. Đổi cấu trúc thư mục thì chỉ sửa file này."""
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[3]          # thư mục ViMedWaste/
+# Thư mục ViMedWaste/. Đặt VIMEDWASTE_ROOT khi package được cài không ở chế độ editable (ví dụ trong Docker).
+ROOT = Path(os.environ.get("VIMEDWASTE_ROOT", Path(__file__).resolve().parents[3]))
 
 CONFIGS_DIR = ROOT / "configs"
 DATA_DIR = ROOT / "data"                            # dữ liệu: KHÔNG đưa ảnh gốc và mapping lên Git

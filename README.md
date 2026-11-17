@@ -59,6 +59,19 @@ Yêu cầu: Python 3.11 (môi trường ảo `..\.venv`), Node 20+.
 
 PowerShell chặn script thì chạy một lần: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 
+## Deploy lên Hugging Face Spaces
+
+Một container Docker (`Dockerfile`): build Angular, FastAPI phục vụ cả API lẫn giao diện ở cổng 7860, khóa bằng mật khẩu,
+tự sinh 24 sự kiện mô phỏng từ bộ ảnh demo nhỏ (`data/demo/`, 168 ảnh) mỗi lần khởi động.
+
+```powershell
+.\scripts\dev.ps1 docker                          # thử trên máy: http://localhost:7860 (mật khẩu: demo)
+..\.venv\Scripts\hf.exe auth login                # một lần, dán token quyền Write
+.\scripts\dev.ps1 deploy <tài-khoản>/vimedwaste   # gom file → tạo Space → đặt mật khẩu → tải lên
+```
+
+Gói miễn phí không giữ dữ liệu khi Space khởi động lại. Không đưa ảnh thật của bệnh viện lên đây.
+
 ## Quy trình phát triển
 
 Theo 6 bước (bám bài giảng Thân Quang Khoát, `../11_HE_THONG_PROMPT_THUC_CHIEN.md`):
