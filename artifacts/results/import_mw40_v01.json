@@ -1,0 +1,96 @@
+{
+  "name": "import_mw40_v01",
+  "created_at": "2026-11-14T08:26:24+00:00",
+  "commit": "no-git",
+  "seed": null,
+  "source": "mw40_v01",
+  "license": "CC BY 4.0",
+  "source_url": "https://zenodo.org/records/7643417",
+  "status_counts": {
+    "used": 865,
+    "ood": 429,
+    "skipped": 121
+  },
+  "per_class": [
+    {
+      "source_class": "gauze",
+      "mapped_to": "L03",
+      "n": 131
+    },
+    {
+      "source_class": "glove_pair_latex",
+      "mapped_to": "L04",
+      "n": 110
+    },
+    {
+      "source_class": "glove_pair_nitrile",
+      "mapped_to": "L04",
+      "n": 110
+    },
+    {
+      "source_class": "glove_pair_surgery",
+      "mapped_to": "L04",
+      "n": 100
+    },
+    {
+      "source_class": "glove_single_latex",
+      "mapped_to": "L04",
+      "n": 101
+    },
+    {
+      "source_class": "glove_single_nitrile",
+      "mapped_to": "L04",
+      "n": 111
+    },
+    {
+      "source_class": "glove_single_surgery",
+      "mapped_to": "L04",
+      "n": 102
+    },
+    {
+      "source_class": "medical_cap",
+      "mapped_to": "OOD",
+      "n": 102
+    },
+    {
+      "source_class": "medical_glasses",
+      "mapped_to": "OOD",
+      "n": 106
+    },
+    {
+      "source_class": "shoe_cover_pair",
+      "mapped_to": "OOD",
+      "n": 117
+    },
+    {
+      "source_class": "shoe_cover_single",
+      "mapped_to": "OOD",
+      "n": 104
+    },
+    {
+      "source_class": "test_tube",
+      "mapped_to": "",
+      "n": 121
+    },
+    {
+      "source_class": "urine_bag",
+      "mapped_to": "L05",
+      "n": 100
+    }
+  ],
+  "label_by_split": {
+    "L03": {
+      "train": 92,
+      "val": 39
+    },
+    "L04": {
+      "train": 444,
+      "val": 190
+    },
+    "L05": {
+      "train": 70,
+      "val": 30
+    }
+  },
+  "n_groups": 24
+}

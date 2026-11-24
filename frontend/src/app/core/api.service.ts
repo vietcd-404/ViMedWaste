@@ -2,7 +2,7 @@ import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http'
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, catchError, shareReplay, tap, throwError } from 'rxjs';
 import {
-  Decision, EventDetail, EventSummary, Handling, LabelsResponse, ModelInfo, Overview,
+  Decision, EventDetail, EventSummary, Handling, LabelsResponse, ModelInfo, Overview, TrainingReport,
   Settings, Station, Verdict, Zone,
 } from './models';
 
@@ -25,6 +25,10 @@ export class ApiService {
   labels(): Observable<LabelsResponse> {
     this.labels$ ??= this.wrap(this.http.get<LabelsResponse>(`${this.base}/labels`)).pipe(shareReplay(1));
     return this.labels$;
+  }
+
+  training() {
+    return this.wrap(this.http.get<TrainingReport>(`${this.base}/training`));
   }
 
   model() {

@@ -18,6 +18,7 @@ export class App implements OnInit {
     { path: '/su-kien', text: 'Sự kiện' },
     { path: '/cau-hinh-tram', text: 'Cấu hình trạm' },
     { path: '/kiem-tra', text: 'Kiểm tra thùng' },
+    { path: '/huan-luyen', text: 'Huấn luyện mô hình' },
     { path: '/bang-nhan', text: 'Bảng nhãn' },
     { path: '/he-thong', text: 'Cách hoạt động' },
   ];

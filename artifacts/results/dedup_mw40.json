@@ -1,0 +1,15 @@
+{
+  "name": "dedup_mw40",
+  "created_at": "2026-11-14T08:27:03+00:00",
+  "commit": "no-git",
+  "seed": null,
+  "n_images": 1294,
+  "max_distance": 6,
+  "n_pairs": 226,
+  "n_images_in_pairs": 246,
+  "n_cross_split_pairs": 27,
+  "cross_split_by_pair": {
+    "train-val": 24,
+    "val-train": 3
+  }
+}

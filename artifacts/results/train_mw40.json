@@ -1,0 +1,125 @@
+{
+  "name": "train_mw40",
+  "created_at": "2026-11-17T15:29:09+00:00",
+  "commit": "a5d0bd9",
+  "seed": 0,
+  "warning": "Chỉ huấn luyện trên Medical Waste 4.0: 3/10 nhãn, mỗi lớp chụp trong một phiên → điểm val cao ảo; chỉ để chạy thử, không phải bằng chứng",
+  "data": {
+    "n_train": 606,
+    "n_val": 259,
+    "n_ood_near": 429,
+    "positives_train": {
+      "L03": 92,
+      "L04": 444,
+      "L05": 70
+    },
+    "positives_val": {
+      "L03": 39,
+      "L04": 190,
+      "L05": 30
+    }
+  },
+  "thresholds_bayes": {
+    "L01": 0.09090909090909091,
+    "L02": 0.09090909090909091,
+    "L03": 0.16666666666666666,
+    "L04": 0.16666666666666666,
+    "L05": 0.16666666666666666,
+    "L06": 0.16666666666666666,
+    "L07": 0.16666666666666666,
+    "L08": 0.5,
+    "L09": 0.5,
+    "L10": 0.5
+  },
+  "baselines_val": {
+    "muc_san_tan_suat": {
+      "ap": {
+        "L03": 0.15057915057915058,
+        "L04": 0.7335907335907336,
+        "L05": 0.11583011583011583
+      },
+      "mAP": 0.3333333333333333,
+      "macro_f1": 0.28210838901262064,
+      "exact_match": 0.7335907335907336
+    },
+    "logistic_regression": {
+      "ap": {
+        "L03": 1.0,
+        "L04": 1.0,
+        "L05": 1.0
+      },
+      "mAP": 1.0,
+      "macro_f1": 1.0,
+      "exact_match": 1.0
+    },
+    "linear_svc": {
+      "ap": {
+        "L03": 1.0,
+        "L04": 1.0,
+        "L05": 1.0
+      },
+      "mAP": 1.0,
+      "macro_f1": 0.9916666666666667,
+      "exact_match": 0.9922779922779923
+    },
+    "knn_k5": {
+      "ap": {
+        "L03": 1.0,
+        "L04": 1.0,
+        "L05": 1.0
+      },
+      "mAP": 1.0,
+      "macro_f1": 0.9948186528497409,
+      "exact_match": 0.9768339768339769
+    },
+    "random_forest": {
+      "ap": {
+        "L03": 1.0,
+        "L04": 1.0,
+        "L05": 1.0
+      },
+      "mAP": 1.0,
+      "macro_f1": 0.9533146591970122,
+      "exact_match": 0.8764478764478765
+    }
+  },
+  "main_model": {
+    "val_mAP_3_seed": {
+      "mean": 1.0,
+      "std": 0.0,
+      "per_seed": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "best_seed": 0,
+    "best_seed_val_after_T": {
+      "ap": {
+        "L03": 1.0,
+        "L04": 1.0,
+        "L05": 1.0
+      },
+      "mAP": 1.0,
+      "macro_f1": 0.9682957943827509,
+      "exact_match": 0.8687258687258688
+    },
+    "val_rate_any_untrained_label_flagged": 0.0,
+    "temperature": 0.3044782876968384,
+    "temperature_note": "T fit trên chính val (không có test riêng) → lạc quan",
+    "open_set": {
+      "score": "joint_energy",
+      "tau_keep_95pct_val": 1.6578375101089478,
+      "auroc_val_vs_ood_near": 0.626967626967627,
+      "ood_accepted_rate_at_tau": 0.8135198135198135,
+      "n_val": 259,
+      "n_ood": 429
+    },
+    "onnx_max_abs_diff": 3.4332275390625e-05
+  },
+  "onnx": {
+    "path": "artifacts/models/vimedwaste.onnx",
+    "size_mb": 15.33
+  },
+  "runtime_s": 8.6
+}

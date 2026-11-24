@@ -10,6 +10,7 @@ from PIL import Image
 
 from vimedwaste.serving import inference
 from vimedwaste.core.config import load_config
+from vimedwaste.core.paths import RESULTS_DIR
 from vimedwaste.serving.decision import UNKNOWN, Decision, correct_bins, decide
 
 from . import catalog
@@ -47,6 +48,14 @@ def model_info() -> dict:
 def model_detail() -> dict:
     s = _state()
     return {"available": s["predictor"] is not None, **(s["meta"] or {})}
+
+
+def training_report() -> dict:
+    """Kết quả lần train gần nhất (artifacts/results/train_mw40.json) cho trang Huấn luyện."""
+    path = RESULTS_DIR / "train_mw40.json"
+    if not path.exists():
+        return {"available": False}
+    return {"available": True, **json.loads(path.read_text(encoding="utf-8"))}
 
 
 def decision_dict(d: Decision) -> dict:

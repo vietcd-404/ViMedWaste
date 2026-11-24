@@ -5,7 +5,6 @@
 .venv
 .pytest_cache
 backend/data
-artifacts/results
 data/raw
 data/mapping
 data/anon

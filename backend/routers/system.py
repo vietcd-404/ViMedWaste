@@ -30,6 +30,12 @@ def model():
     return model_service.model_detail()
 
 
+@router.get("/training")
+def training():
+    """Chi tiết lần train gần nhất: dữ liệu, baseline, mô hình chính, hiệu chuẩn, lớp mở, ONNX."""
+    return model_service.training_report()
+
+
 @router.post("/predict")
 async def predict(image: UploadFile = File(...), bin_type: str = Form(...)):
     if bin_type not in load_config().bins:

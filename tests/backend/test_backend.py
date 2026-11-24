@@ -115,3 +115,11 @@ def _png() -> bytes:
     buf = io.BytesIO()
     Image.new("RGB", (64, 64), (128, 128, 128)).save(buf, format="PNG")
     return buf.getvalue()
+
+
+def test_training_report(client):
+    r = client.get("/api/training").json()
+    if not r["available"]:
+        pytest.skip("chưa có artifacts/results/train_mw40.json")
+    assert {"data", "baselines_val", "main_model", "onnx", "thresholds_bayes"} <= set(r)
+    assert r["data"]["n_train"] > 0 and 0 <= r["main_model"]["open_set"]["auroc_val_vs_ood_near"] <= 1

@@ -30,5 +30,9 @@ export const routes: Routes = [
     path: 'he-thong', title: 'Cách hệ thống hoạt động · ViMedWaste',
     loadComponent: () => import('./pages/system/system').then((m) => m.SystemPage),
   },
+  {
+    path: 'huan-luyen', title: 'Huấn luyện mô hình · ViMedWaste',
+    loadComponent: () => import('./pages/training/training').then((m) => m.TrainingPage),
+  },
   { path: '**', redirectTo: 'tong-quan' },
 ];

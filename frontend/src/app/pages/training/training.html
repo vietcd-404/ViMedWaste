@@ -1,0 +1,185 @@
+<div class="page">
+  <div class="page-head">
+    <h1>Huấn luyện mô hình</h1>
+    @if (report()?.available) {
+      <span class="badge">Dữ liệu ngoài · Medical Waste 4.0</span>
+      <span class="muted">Lần train: {{ dateTime(report()!.created_at) }} · {{ vn(report()!.runtime_s, 1) }} giây trên CPU</span>
+    }
+  </div>
+  <p class="page-sub">Từng bước biến ảnh có nhãn thành file mô hình mà hệ thống đang dùng. Bấm vào một bước để xem chi tiết.</p>
+
+  @if (loading()) {
+    <section class="card"><p class="muted">Đang tải kết quả huấn luyện…</p></section>
+  } @else if (!report()?.available) {
+    <section class="card empty">
+      <h2>Chưa có kết quả huấn luyện</h2>
+      <p class="muted">Chạy <code>.\scripts\dev.ps1 train</code> để tạo <code>artifacts/results/train_mw40.json</code>.</p>
+    </section>
+  } @else {
+    @let r = report()!;
+    @let m = r.main_model!;
+    @let d = r.data!;
+
+    @if (r.warning) {
+      <div class="warn-box" role="note"><b>Lưu ý khi đọc số liệu:</b> {{ r.warning }}</div>
+    }
+
+    <!-- Sơ đồ luồng -->
+    <section class="card">
+      <h2>Luồng huấn luyện</h2>
+      <ol class="flow">
+        @for (s of steps(); track s.id) {
+          <li>
+            <button type="button" class="node" [class.deploy]="s.no === 8" (click)="go(s.id)">
+              <span class="node-top"><span class="no">{{ s.no }}</span><span class="phase">{{ s.phase }}</span></span>
+              <span class="node-title">{{ s.title }}</span>
+              <span class="node-metric tnum">{{ s.metric }}</span>
+            </button>
+          </li>
+        }
+      </ol>
+      <p class="note">Chỉ phần <b>5 · Mô hình chính</b> được học. "Mắt" EfficientNet-B0 ở bước 3 giữ nguyên trọng số học sẵn trên ImageNet (học chuyển giao).</p>
+    </section>
+
+    <div class="detail-grid">
+      <!-- 1. Dữ liệu -->
+      <section class="card step" id="du-lieu">
+        <div class="step-head"><span class="no">1</span><h2>Dữ liệu</h2><span class="phase">Bước 2</span></div>
+        <div class="xy">
+          <div class="xy-box"><b>Feature (X)</b><span>Ảnh từ cột <code>file_path</code> → vector 1280 số</span></div>
+          <div class="xy-box"><b>Target (Y)</b><span>10 cột <code>L01…L10</code> (0/1) trong <code>labels.csv</code></span></div>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>Nhãn có mẫu</th><th class="num">Train</th><th class="num">Val</th></tr></thead>
+          <tbody>
+            @for (k of activeLabels(); track k) {
+              <tr><td>{{ k }}</td><td class="num tnum">{{ vn(d.positives_train[k]) }}</td><td class="num tnum">{{ vn(d.positives_val[k]) }}</td></tr>
+            }
+            <tr class="total"><td>Tổng ảnh</td><td class="num tnum">{{ vn(d.n_train) }}</td><td class="num tnum">{{ vn(d.n_val) }}</td></tr>
+          </tbody>
+        </table>
+        <p class="note">Chia theo khối thời gian trong từng lớp (70 % đầu → train). {{ vn(d.n_ood_near) }} ảnh vật lạ gần (mũ, kính, bọc giày) giữ riêng, không train, chỉ dùng ở bước 7. 7 nhãn còn lại chưa có mẫu.</p>
+      </section>
+
+      <!-- 2. Tiền xử lý -->
+      <section class="card step" id="tien-xu-ly">
+        <div class="step-head"><span class="no">2</span><h2>Tiền xử lý ảnh</h2><span class="phase">Bước 2</span></div>
+        <ol class="chain">
+          <li><b>Ảnh gốc</b><span>1920 × 1080, RGB</span></li>
+          <li><b>Thu nhỏ</b><span>cạnh ngắn = 256 px</span></li>
+          <li><b>Cắt giữa</b><span>224 × 224</span></li>
+          <li><b>Chuẩn hóa</b><span>(x − mean) / std ImageNet</span></li>
+          <li><b>Tensor</b><span>1 × 3 × 224 × 224</span></li>
+        </ol>
+        <p class="note">Một hàm <code>preprocess()</code> (Pillow + NumPy) dùng chung cho lúc train và lúc chạy thật. Chưa tăng cường dữ liệu vì backbone đang đóng băng.</p>
+      </section>
+
+      <!-- 3. Đặc trưng -->
+      <section class="card step" id="dac-trung">
+        <div class="step-head"><span class="no">3</span><h2>Trích đặc trưng</h2><span class="phase">Bước 3</span></div>
+        <dl class="kv">
+          <dt>Backbone</dt><dd>EfficientNet-B0 (torchvision)</dd>
+          <dt>Trọng số</dt><dd>ImageNet-1k, học sẵn trên ~1,2 triệu ảnh</dd>
+          <dt>Trạng thái</dt><dd><b>Đóng băng</b>, không cập nhật</dd>
+          <dt>Đầu ra</dt><dd>Vector <b>1280</b> số sau lớp gộp trung bình</dd>
+          <dt>Lưu đệm</dt><dd><code>data/features/mw40_effb0.npz</code></dd>
+        </dl>
+        <p class="note">Bỏ lớp phân loại 1000 lớp của ImageNet, giữ phần "nhìn" hình dạng, màu, chất liệu.</p>
+      </section>
+
+      <!-- 4. Baseline -->
+      <section class="card step" id="baseline">
+        <div class="step-head"><span class="no">4</span><h2>Baseline cổ điển</h2><span class="phase">Bước 3</span></div>
+        <table class="tbl">
+          <thead><tr><th>Mô hình (trên đặc trưng 1280)</th><th>mAP</th><th class="num">macro-F1</th><th class="num">Exact</th></tr></thead>
+          <tbody>
+            @for (b of baselines(); track b.key) {
+              <tr [class.floor]="isFloor(b.key)">
+                <td>{{ b.name }}</td>
+                <td class="map"><span class="bar"><span [style.width.%]="b.m.mAP * 100"></span></span><span class="tnum">{{ vn(b.m.mAP, 2) }}</span></td>
+                <td class="num tnum">{{ vn(b.m.macro_f1, 2) }}</td>
+                <td class="num tnum">{{ vn(b.m.exact_match, 2) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <p class="note">"Không có bữa trưa miễn phí": so nhiều mô hình trên cùng dữ liệu. Mỗi nhãn một bộ phân loại (binary relevance), scikit-learn.</p>
+      </section>
+
+      <!-- 5. Mô hình chính -->
+      <section class="card step wide" id="mo-hinh">
+        <div class="step-head"><span class="no">5</span><h2>Mô hình chính</h2><span class="phase">Bước 4</span></div>
+        <div class="split">
+          <dl class="kv">
+            @for (c of headConfig; track c[0]) {
+              <dt>{{ c[0] }}</dt><dd>{{ c[1] }}</dd>
+            }
+          </dl>
+          <div class="results">
+            <div class="big"><span class="big-num tnum">{{ vn(m.val_mAP_3_seed.mean, 2) }}</span><span class="big-label">mAP val · trung bình 3 seed (± {{ vn(m.val_mAP_3_seed.std, 2) }})</span></div>
+            <div class="seeds">
+              @for (s of m.val_mAP_3_seed.per_seed; track $index) {
+                <span class="seed" [class.best]="$index === m.best_seed">seed {{ $index }} · {{ vn(s, 2) }}</span>
+              }
+            </div>
+            <dl class="kv compact">
+              <dt>Sau hiệu chuẩn</dt><dd>macro-F1 {{ vn(m.best_seed_val_after_T.macro_f1, 2) }} · exact {{ vn(m.best_seed_val_after_T.exact_match, 2) }}</dd>
+              <dt>AP từng nhãn</dt><dd>{{ apList(m.best_seed_val_after_T) }}</dd>
+              <dt>Báo nhầm nhãn chưa học</dt><dd>{{ pct(m.val_rate_any_untrained_label_flagged) }} ảnh val</dd>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. Hiệu chuẩn -->
+      <section class="card step" id="hieu-chuan">
+        <div class="step-head"><span class="no">6</span><h2>Hiệu chuẩn & ngưỡng</h2><span class="phase">Bước 5</span></div>
+        <div class="big"><span class="big-num tnum">T = {{ vn(m.temperature, 3) }}</span><span class="big-label">p = sigmoid(z / T), tìm T bằng L-BFGS trên val</span></div>
+        <p class="note">{{ m.temperature_note }}. T &lt; 1: mô hình đang thiếu tự tin nên xác suất được "kéo giãn".</p>
+        <h3 class="sub">Ngưỡng theo quy tắc Bayes: p ≥ 1 / (1 + C_FN)</h3>
+        @for (g of thresholdGroups(); track g.t) {
+          <div class="thr">
+            <span class="thr-codes">{{ g.codes }}</span>
+            <span class="bar"><span [style.width.%]="g.t * 100"></span></span>
+            <span class="tnum">{{ vn(g.t, 2) }}</span>
+            <span class="muted">C_FN = {{ g.cfn }}</span>
+          </div>
+        }
+      </section>
+
+      <!-- 7. Lớp mở -->
+      <section class="card step" id="lop-mo">
+        <div class="step-head"><span class="no">7</span><h2>Lớp mở (chặn vật lạ)</h2><span class="phase">Bước 5</span></div>
+        <dl class="kv">
+          <dt>Điểm</dt><dd>JointEnergy S(x) = Σ log(1 + e<sup>z_k</sup>)</dd>
+          <dt>Ngưỡng τ</dt><dd><b class="tnum">{{ vn(m.open_set.tau_keep_95pct_val, 2) }}</b> (giữ 95 % ảnh val)</dd>
+        </dl>
+        <div class="gauge">
+          <div class="gauge-row"><span>AUROC val vs vật lạ</span><b class="tnum">{{ vn(m.open_set.auroc_val_vs_ood_near, 2) }}</b></div>
+          <span class="bar wide-bar"><span [style.width.%]="m.open_set.auroc_val_vs_ood_near * 100"></span></span>
+          <div class="scale"><span>0,5 = đoán bừa</span><span>1,0 = tách hoàn hảo</span></div>
+        </div>
+        <div class="gauge">
+          <div class="gauge-row"><span>Vật lạ bị chấp nhận tại τ</span><b class="tnum warn-text">{{ pct(m.open_set.ood_accepted_rate_at_tau) }}</b></div>
+          <span class="bar wide-bar warn"><span [style.width.%]="m.open_set.ood_accepted_rate_at_tau * 100"></span></span>
+        </div>
+        <p class="note">Đo trên {{ vn(m.open_set.n_val) }} ảnh val và {{ vn(m.open_set.n_ood) }} ảnh vật lạ. Phần này còn yếu: phần lớn mũ, kính, bọc giày vẫn lọt qua.</p>
+      </section>
+
+      <!-- 8. ONNX -->
+      <section class="card step" id="onnx">
+        <div class="step-head"><span class="no">8</span><h2>Xuất ONNX</h2><span class="phase">Triển khai</span></div>
+        <dl class="kv">
+          <dt>Gộp</dt><dd>EfficientNet-B0 + Linear + chia T → một mô hình</dd>
+          <dt>File</dt><dd><code>{{ r.onnx?.path }}</code> · {{ vn(r.onnx?.size_mb, 1) }} MB</dd>
+          <dt>Định dạng</dt><dd>ONNX opset 17, batch động, chạy bằng onnxruntime</dd>
+          <dt>Kiểm tra</dt><dd>Lệch so với PyTorch tối đa {{ m.onnx_max_abs_diff.toExponential(1) }}</dd>
+          <dt>Kèm theo</dt><dd><code>meta.json</code> (T, τ, nhãn) · <code>head.pt</code> (cho Grad-CAM)</dd>
+        </dl>
+        <p class="note">Backend chỉ cần file ONNX + meta.json + labels.yaml để dự đoán, không cần ảnh train.</p>
+      </section>
+    </div>
+
+    <p class="muted foot">Commit {{ r.commit }} · seed tốt nhất {{ m.best_seed }} · nguồn: <code>artifacts/results/train_mw40.json</code></p>
+  }
+</div>

@@ -136,3 +136,47 @@ export const HANDLING_TEXT: Record<Handling, string> = {
   DA_LAY_RA: 'Đã lấy ra',
   CHO_XEM_LAI: 'Chờ xem lại',
 };
+
+/** Kết quả một lần train (GET /api/training ← artifacts/results/train_mw40.json). */
+export interface EvalMetrics {
+  ap: Record<string, number>;
+  mAP: number;
+  macro_f1: number;
+  exact_match: number;
+}
+
+export interface TrainingReport {
+  available: boolean;
+  created_at?: string;
+  commit?: string;
+  seed?: number;
+  warning?: string;
+  runtime_s?: number;
+  data?: {
+    n_train: number;
+    n_val: number;
+    n_ood_near: number;
+    positives_train: Record<string, number>;
+    positives_val: Record<string, number>;
+  };
+  thresholds_bayes?: Record<string, number>;
+  baselines_val?: Record<string, EvalMetrics>;
+  main_model?: {
+    val_mAP_3_seed: { mean: number; std: number; per_seed: number[] };
+    best_seed: number;
+    best_seed_val_after_T: EvalMetrics;
+    val_rate_any_untrained_label_flagged: number;
+    temperature: number;
+    temperature_note: string;
+    open_set: {
+      score: string;
+      tau_keep_95pct_val: number;
+      auroc_val_vs_ood_near: number;
+      ood_accepted_rate_at_tau: number;
+      n_val: number;
+      n_ood: number;
+    };
+    onnx_max_abs_diff: number;
+  };
+  onnx?: { path: string; size_mb: number };
+}

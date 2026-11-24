@@ -38,6 +38,7 @@ RUN if [ "$GRADCAM" = "1" ]; then \
 COPY configs ./configs
 COPY backend ./backend
 COPY artifacts/models ./artifacts/models
+COPY artifacts/results ./artifacts/results
 COPY data/demo ./data/demo
 COPY --from=frontend /fe/dist/frontend/browser ./static
 
